@@ -1,29 +1,28 @@
 <?php
 
 	$repo_name = $argv[1];
-	$pos = strpos($repo_name, '/');
 
 	$array = array();
 	
 	$url = 'https://api.bitbucket.org/2.0/repositories/' . $repo_name . '/pullrequests';
 
-        $options = array('http' => array(
-            'method'  => 'GET',
-            'ignore_errors' => TRUE
-        ));
+    $options = array('http' => array(
+        'method'  => 'GET',
+        'ignore_errors' => TRUE
+    ));
 
     $context  = stream_context_create($options);
     $response = file_get_contents($url, false, $context);
 
+    //To get HTTP codes in case of errors
     if(is_array($http_response_header))
-        {
-            $parts=explode(' ',$http_response_header[0]);
-            if(count($parts)>1) //HTTP/1.0 <code> <text>
-                $code = intval($parts[1]); //Get code
-        }
+    {
+        $parts=explode(' ',$http_response_header[0]);
+        if(count($parts)>1) //HTTP/1.0 <code> <text>
+            $code = intval($parts[1]); //Get code
+    }
 
-        
-	//$content = file_get_contents('https://api.bitbucket.org/2.0/repositories/' .$author .'/' .$repo_slug .'/pullrequests');
+    //In success
     if($code == 200) {
             $hrefs = json_decode($response);
             foreach ($hrefs->values as $item)
@@ -41,7 +40,12 @@
                 }
             }
             $string = implode(" ", $array);
-            exec("google-chrome " .$string);
+            if (!empty($string)) {
+                exec("google-chrome " .$string);
+            }
+            else {
+                print("The repository has no open pull requests\r\n");
+            }
             
         }
         else {
